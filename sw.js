@@ -1,6 +1,6 @@
 // Cache đơn giản để app chạy offline sau lần mở đầu tiên.
-const CACHE = "helling-v1";
-const ASSETS = ["./", "index.html", "styles.css", "data.js", "app.js", "manifest.json", "icons/icon.svg"];
+const CACHE = "helling-v2";
+const ASSETS = ["./", "index.html", "styles.css", "data.js", "presence.js", "app.js", "manifest.json", "icons/icon.svg"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));

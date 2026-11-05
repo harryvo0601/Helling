@@ -51,7 +51,12 @@
     </svg>`;
 
   // Linh hồn nhỏ: người chơi
-  const soulSVG = (mood = "sad", cls = "soul") => {
+  const soulSVG = (mood = "sad", cls = "soul", tint = "#fffaf5", halo = mood === "happy") => {
+    if (mood === "calm") return `
+    <svg class="${cls}" viewBox="0 0 100 110"><path d="M14 56 Q14 12 50 12 Q86 12 86 56 L86 92 Q79 102 72 92 Q65 102 57 92 Q50 102 43 92 Q35 102 28 92 Q21 102 14 92 Z" fill="${tint}"/>
+      <path d="M33 48 q5 5 10 0" stroke="#3b2550" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M57 48 q5 5 10 0" stroke="#3b2550" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <ellipse cx="28" cy="58" rx="6" ry="3.5" fill="#ffb3c6"/><ellipse cx="72" cy="58" rx="6" ry="3.5" fill="#ffb3c6"/>
+      <circle cx="50" cy="63" r="3" fill="#3b2550"/></svg>`;
     const mouth = mood === "happy"
       ? `<path d="M40 60 Q50 70 60 60" stroke="#3b2550" stroke-width="3" fill="none" stroke-linecap="round"/>`
       : `<path d="M42 64 Q50 58 58 64" stroke="#3b2550" stroke-width="3" fill="none" stroke-linecap="round"/>`;
@@ -60,12 +65,12 @@
       : `<circle cx="38" cy="48" r="4.5" fill="#3b2550"/><circle cx="62" cy="48" r="4.5" fill="#3b2550"/><circle cx="39.5" cy="46.5" r="1.4" fill="#fff"/><circle cx="63.5" cy="46.5" r="1.4" fill="#fff"/>`;
     return `
     <svg class="${cls}" viewBox="0 0 100 110" aria-label="Linh hồn nhỏ">
-      <path d="M14 56 Q14 12 50 12 Q86 12 86 56 L86 92 Q79 102 72 92 Q65 102 57 92 Q50 102 43 92 Q35 102 28 92 Q21 102 14 92 Z" fill="#fffaf5"/>
-      <path d="M14 56 Q14 12 50 12 Q86 12 86 56 L86 66 Q50 74 14 66 Z" fill="#fff" opacity=".7"/>
+      <path d="M14 56 Q14 12 50 12 Q86 12 86 56 L86 92 Q79 102 72 92 Q65 102 57 92 Q50 102 43 92 Q35 102 28 92 Q21 102 14 92 Z" fill="${tint}"/>
+      <path d="M14 56 Q14 12 50 12 Q86 12 86 56 L86 66 Q50 74 14 66 Z" fill="#fff" opacity=".5"/>
       ${eyes}
       <ellipse cx="28" cy="58" rx="6" ry="3.5" fill="#ffb3c6"/><ellipse cx="72" cy="58" rx="6" ry="3.5" fill="#ffb3c6"/>
       ${mouth}
-      ${mood === "happy" ? `<ellipse cx="50" cy="6" rx="16" ry="4" fill="none" stroke="#ffe08a" stroke-width="3"/>` : ""}
+      ${halo ? `<ellipse cx="50" cy="6" rx="16" ry="4" fill="none" stroke="#ffe08a" stroke-width="3"/>` : ""}
     </svg>`;
   };
 
@@ -78,11 +83,11 @@
   function go(tab, arg) {
     if (cleanup) { cleanup(); cleanup = null; }
     current = tab;
-    document.querySelectorAll(".tabbar button").forEach((b) => b.classList.toggle("active", b.dataset.tab === tab || (tab === "floor" && b.dataset.tab === "map")));
+    document.querySelectorAll(".tabbar button").forEach((b) => b.classList.toggle("active", b.dataset.tab === tab || ((tab === "floor" || tab === "lobby") && b.dataset.tab === "map")));
     view.innerHTML = "";
     view.className = "fade-in";
     void view.offsetWidth;
-    ({ map: renderMap, reflect: renderReflect, book: renderBook, floor: renderFloor, onboard: renderOnboard })[tab](arg);
+    ({ map: renderMap, reflect: renderReflect, book: renderBook, floor: renderFloor, lobby: renderLobby, onboard: renderOnboard })[tab](arg);
     window.scrollTo(0, 0);
   }
   document.querySelectorAll(".tabbar button").forEach((b) => b.addEventListener("click", () => S.name ? go(b.dataset.tab) : null));
@@ -123,7 +128,7 @@
       return `
         <button class="floor ${f.special ? "special" : ""}" data-n="${f.n}" style="--c:${f.color}">
           <span class="num">${f.prop}<small>${f.n}</small></span>
-          <span class="info"><b>${f.special ? esc(f.name) : `Tầng ${f.n} · ${esc(f.name)}`}</b><span>${esc(f.sin)}</span></span>
+          <span class="info"><b>${f.special ? esc(f.name) : `Tầng ${f.n} · ${esc(f.name)}`}</b><span>${esc(f.sin)}</span><span class="crowd">👻 ${Presence.count(f.n)} linh hồn trong sảnh</span></span>
           ${right}
         </button>`;
     };
@@ -135,7 +140,89 @@
       <p class="gate-label">✦ ✦ ✦ CỔNG TẦNG 19 ✦ ✦ ✦</p>
       <div class="tower" style="margin-top:10px">${FLOORS.filter((f) => f.special).map(item).join("")}</div>
       <p class="note">Tên các tầng lấy cảm hứng từ tín ngưỡng dân gian “Thập Bát Tầng Địa Ngục”, được diễn giải lại nhẹ nhàng.</p>`;
-    view.querySelectorAll(".floor").forEach((b) => b.onclick = () => go("floor", +b.dataset.n));
+    view.querySelectorAll(".floor").forEach((b) => b.onclick = () => go("lobby", +b.dataset.n));
+  }
+
+  // ---------------- Lobby (sảnh mỗi tầng) ----------------
+  function renderLobby(n) {
+    const f = floorOf(n);
+    const owe = S.debt[f.n] || 0;
+    const title = f.special ? f.name : `Tầng ${f.n} · ${f.name}`;
+    view.innerHTML = `
+      <button class="back" id="back">← Về bản đồ</button>
+      <div class="lobby scene ${f.special ? "special" : ""}" style="--c:${f.color}" id="lobby">
+        ${stars(12)}
+        <span class="tag">Sảnh ${esc(title)}</span>
+        <div class="gate"><span>${f.prop}</span></div>
+        <div class="ground" id="ground"></div>
+      </div>
+      <div class="lobby-meta"><span id="who"></span><span class="demo">Bản demo · linh hồn mô phỏng</span></div>
+      <div class="card">
+        <h3>${esc(f.sin)}</h3>
+        <p class="sub">${esc(f.story)}</p>
+        <p class="sub">${owe ? `Bạn đang nợ <b>${owe}</b> phần nghiệp ở tầng này.` : "Bạn không nợ gì ở tầng này — vào tu dưỡng để tích công đức."}</p>
+      </div>
+      <div style="height:14px"></div>
+      <button class="btn" id="enter">🚪 Vào phòng trả nghiệp</button>
+      <p class="note">Chạm vào sàn để di chuyển · chạm vào linh hồn khác để gửi lời động viên 💛</p>`;
+    $("#back").onclick = () => go("map");
+    $("#enter").onclick = () => go("floor", f.n);
+
+    const lobby = $("#lobby");
+    const els = {};
+    const place = (el, x, y) => {
+      el.style.left = `${x}%`; el.style.top = `${y}%`;
+      el.style.zIndex = Math.round(y);
+      el.style.setProperty("--s", (0.7 + (y - 55) / 100).toFixed(2));
+    };
+    const makeAv = (p, me) => {
+      const el = document.createElement("div");
+      el.className = `av${me ? " me" : ""}`;
+      el.innerHTML = `<span class="bb"></span><span class="tl">${(ACTS[f.n] || ["✨"])[0]}</span>
+        <div class="body">${soulSVG(me ? (owe ? "sad" : "happy") : p.halo ? "happy" : "sad", "", p.tint)}</div><span class="nm">${esc(p.name)}</span>`;
+      lobby.appendChild(el);
+      return el;
+    };
+    const say = (el, text) => {
+      const b = el.querySelector(".bb"); b.textContent = text; b.classList.add("show");
+      clearTimeout(b._t); b._t = setTimeout(() => b.classList.remove("show"), 2600);
+    };
+
+    // mình
+    const me = { id: "me", name: S.name, tint: "#fffaf5" };
+    const meEl = makeAv(me, true);
+    place(meEl, 50, 80);
+    setTimeout(() => say(meEl, owe ? "Mình đến trả nghiệp đây…" : "Ghé chơi chút!"), 500);
+    $("#ground").onpointerdown = (e) => {
+      const r = lobby.getBoundingClientRect();
+      const x = Math.max(8, Math.min(92, ((e.clientX - r.left) / r.width) * 100));
+      const y = Math.max(58, Math.min(90, ((e.clientY - r.top) / r.height) * 100));
+      meEl.classList.toggle("flip", x < parseFloat(meEl.style.left));
+      meEl.classList.add("walk"); clearTimeout(meEl._w); meEl._w = setTimeout(() => meEl.classList.remove("walk"), 1500);
+      place(meEl, x, y);
+    };
+
+    const room = Presence.join(f.n, (list, ev) => {
+      const ids = new Set(list.map((p) => p.id));
+      Object.keys(els).forEach((id) => { if (!ids.has(id)) { els[id].classList.add("gone"); const el = els[id]; setTimeout(() => el.remove(), 600); delete els[id]; } });
+      list.forEach((p) => {
+        let el = els[p.id];
+        if (!el) {
+          el = els[p.id] = makeAv(p, false);
+          place(el, p.x, p.y);
+          el.onpointerdown = (e) => { e.stopPropagation(); say(meEl, `Cố lên ${p.name}!`); room.cheer(p.id); vibrate(10); };
+        } else if (parseFloat(el.style.left) !== p.x) {
+          el.classList.toggle("flip", p.x < parseFloat(el.style.left));
+          el.classList.add("walk"); setTimeout(() => el.classList.remove("walk"), 1500);
+          place(el, p.x, p.y);
+        }
+        el.classList.toggle("working", p.working);
+        if (p.halo && !el._halo) { el._halo = true; el.querySelector(".body").innerHTML = soulSVG("happy", "", p.tint); }
+      });
+      if (ev && els[ev.id]) say(els[ev.id], ev.text);
+      $("#who").textContent = `👻 ${list.length + 1} linh hồn đang ở sảnh (có bạn)`;
+    });
+    cleanup = () => room.leave();
   }
 
   // ---------------- Floor ----------------
@@ -143,24 +230,48 @@
     const f = floorOf(n);
     const steps = f.steps || [f.task];
     const owe = S.debt[f.n] || 0;
+    const act = ACTS[f.n] || ["✨", "✨"];
     let stepIdx = 0;
 
     view.innerHTML = `
-      <button class="back" id="back">← Về bản đồ</button>
+      <button class="back" id="back">← Về sảnh</button>
       <div class="scene ${f.special ? "special" : ""}" style="--c:${f.color}" id="scene">
         ${stars()}
         <span class="lantern" style="left:10%">🏮</span><span class="lantern" style="right:10%;animation-delay:-1.5s">🏮</span>
         <span class="tag">${f.special ? esc(f.name) : `Tầng ${f.n} · ${esc(f.name)}`}</span>
         <div class="prop" id="prop">${f.prop}</div>
-        ${soulSVG("sad")}
+        <div class="actor" id="actor"><div class="body">${soulSVG("sad", "")}</div><span class="tool">${act[0]}</span></div>
         ${guideSVG("guide-s")}
         <div class="tapzone" id="tapzone" hidden></div>
       </div>
       <div id="panel"></div>`;
-    $("#back").onclick = () => go("map");
+    $("#back").onclick = () => go("lobby", f.n);
 
     const panel = $("#panel");
     const scene = $("#scene");
+    const actor = $("#actor");
+
+    // --- hoạt hoạ nhân vật làm việc ---
+    const setBody = (mood) => { actor.querySelector(".body").innerHTML = soulSVG(mood, ""); };
+    const work = (mode) => { scene.classList.add("working"); actor.className = `actor ${mode}`; };
+    const strike = () => { actor.classList.remove("strike"); void actor.offsetWidth; actor.classList.add("strike"); };
+    const fx = (n = 1) => {
+      const r = $("#prop").getBoundingClientRect(), s = scene.getBoundingClientRect();
+      for (let i = 0; i < n; i++) {
+        const e = document.createElement("span");
+        e.className = "fx"; e.textContent = act[1];
+        e.style.left = `${r.left - s.left + r.width / 2 + (Math.random() - .5) * r.width}px`;
+        e.style.top = `${r.top - s.top + r.height / 2 + (Math.random() - .5) * r.height * .6}px`;
+        e.style.setProperty("--dx", `${(Math.random() - .5) * 80}px`);
+        scene.appendChild(e); setTimeout(() => e.remove(), 1100);
+      }
+    };
+    // đạo cụ từ xám xịt -> tươi sáng theo tiến độ tổng
+    const glow = (p) => {
+      const total = (stepIdx + p) / steps.length;
+      $("#prop").style.filter = `grayscale(${(0.85 * (1 - total)).toFixed(2)}) brightness(${(0.7 + 0.3 * total).toFixed(2)})`;
+    };
+    glow(0);
 
     // Intro
     panel.innerHTML = `
@@ -186,6 +297,7 @@
     }
 
     function setProgress(p, right) {
+      glow(Math.min(1, p));
       $("#bar").style.width = `${Math.min(100, p * 100)}%`;
       $("#cnt").textContent = right;
     }
@@ -202,11 +314,12 @@
       taskPanel(t, `<p class="sub center">Chạm vào khung hình phía trên 👆</p>`);
       const zone = $("#tapzone"); zone.hidden = false;
       const prop = $("#prop");
+      work("tapper");
       let c = 0; setProgress(0, `0/${t.count}`);
       const onTap = (e) => {
         e.preventDefault();
         if (c >= t.count) return;
-        c++; vibrate(10);
+        c++; vibrate(10); strike(); fx(1);
         prop.classList.add("hit"); setTimeout(() => prop.classList.remove("hit"), 110);
         const r = scene.getBoundingClientRect();
         const pt = e.touches ? e.touches[0] : e;
@@ -227,12 +340,14 @@
         <p class="sub center">Buông tay thì tạm dừng, không mất tiến độ đâu.</p>`);
       const btn = $("#hold"), prop = $("#prop");
       const total = t.seconds * 1000;
-      let acc = 0, last = 0, raf = 0, holding = false;
+      let acc = 0, last = 0, raf = 0, holding = false, lastFx = 0;
+      work("holder");
       setProgress(0, `0/${t.seconds}s`);
       const tick = (ts) => {
         if (!holding) return;
         if (last) acc += ts - last;
         last = ts;
+        if (ts - lastFx > 280) { lastFx = ts; fx(1); }
         const p = acc / total;
         setProgress(p, `${Math.min(t.seconds, Math.floor(acc / 1000))}/${t.seconds}s`);
         $("#hfill").style.width = `${Math.min(100, p * 100)}%`;
@@ -240,8 +355,8 @@
         if (acc >= total) { holding = false; vibrate([20, 40, 20]); prop.style.transform = ""; setTimeout(done, 300); return; }
         raf = requestAnimationFrame(tick);
       };
-      const start = (e) => { e.preventDefault(); if (acc >= total) return; holding = true; last = 0; vibrate(15); raf = requestAnimationFrame(tick); };
-      const stop = () => { holding = false; cancelAnimationFrame(raf); };
+      const start = (e) => { e.preventDefault(); if (acc >= total) return; holding = true; last = 0; vibrate(15); actor.classList.add("busy"); raf = requestAnimationFrame(tick); };
+      const stop = () => { holding = false; actor.classList.remove("busy"); cancelAnimationFrame(raf); };
       btn.addEventListener("pointerdown", start);
       ["pointerup", "pointerleave", "pointercancel"].forEach((ev) => btn.addEventListener(ev, stop));
       btn.addEventListener("contextmenu", (e) => e.preventDefault());
@@ -257,17 +372,19 @@
       scene.appendChild(ring);
       let timers = [];
       cleanup = () => timers.forEach(clearTimeout);
+      work("sitter");
       $("#bstart").onclick = (e) => {
         e.currentTarget.disabled = true;
+        setBody("calm"); actor.classList.add("busy");
         let i = 0;
         const cycle = () => {
           ring.textContent = "Hít vào…"; ring.classList.add("in");
           timers.push(setTimeout(() => {
-            ring.textContent = "Thở ra…"; ring.classList.remove("in");
+            ring.textContent = "Thở ra…"; ring.classList.remove("in"); fx(3);
             timers.push(setTimeout(() => {
               i++; setProgress(i / t.cycles, `${i}/${t.cycles} nhịp`); vibrate(10);
               if (i < t.cycles) cycle();
-              else { ring.textContent = "Nhẹ lòng 🌸"; timers.push(setTimeout(() => { ring.remove(); $("#prop").style.opacity = ""; done(); }, 900)); }
+              else { ring.textContent = "Nhẹ lòng 🌸"; timers.push(setTimeout(() => { ring.remove(); $("#prop").style.opacity = ""; setBody("sad"); done(); }, 900)); }
             }, 4000));
           }, 4000));
         };
@@ -285,9 +402,12 @@
       S.log = S.log.slice(0, 80);
       save();
 
-      // nhân vật vui lên
-      scene.querySelector(".soul").outerHTML = soulSVG("happy");
-      $("#prop").textContent = "🪷";
+      // nhân vật vui lên, cất dụng cụ, đạo cụ nở thành sen
+      scene.classList.remove("working"); actor.className = "actor cheer";
+      setBody("happy");
+      $("#prop").style.filter = "";
+      $("#prop").classList.add("bloom"); $("#prop").textContent = "🪷";
+      fx(6);
       petals(14);
 
       const left = S.debt[f.n] || 0;
@@ -308,10 +428,10 @@
         <div style="height:14px"></div>
         <div class="row">
           <button class="btn ghost" id="again">${left ? "Trả tiếp" : "Làm lại"}</button>
-          <button class="btn" id="home">Về bản đồ</button>
+          <button class="btn" id="home">Về sảnh</button>
         </div>`;
       $("#again").onclick = () => go("floor", f.n);
-      $("#home").onclick = () => go("map");
+      $("#home").onclick = () => go("lobby", f.n);
       $("#deed").onclick = (e) => {
         const el = e.currentTarget;
         if (el.classList.contains("checked")) return;

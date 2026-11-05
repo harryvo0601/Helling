@@ -5,6 +5,12 @@ Hoạt hoạ dễ thương, mục tiêu giải trí và tự soi lại mình —
 
 ![Preview](docs/preview.png)
 
+## Sảnh mỗi tầng
+Mỗi tầng có sảnh riêng: thấy linh hồn của mình (viền sáng, tên màu hồng) và các linh hồn khác đi lại, nói chuyện, đang làm việc hoặc đã có hào quang. Chạm sàn để di chuyển, chạm linh hồn khác để động viên.
+> Hiện là **bản mô phỏng** (`presence.js`). Muốn có người thật, thay `Presence.join()` bằng Firebase/Supabase, giữ nguyên giao diện hàm.
+
+![Sảnh](docs/preview-lobby.png)
+
 ## Cách chơi
 1. **Tự soi** – chọn điều mình thấy chưa ổn (nói xấu, nóng giận, thất hứa…), chọn mức độ Nhẹ/Vừa/Nặng, ghi chú riêng (chỉ lưu trên máy).
 2. Điều đó được ghi vào **sổ nghiệp** của tầng tương ứng (🔥).

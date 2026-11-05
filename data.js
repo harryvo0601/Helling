@@ -132,7 +132,7 @@ window.FLOORS = [
     deed: "Cho đi một món đồ bạn không còn dùng."
   },
   {
-    n: 17, name: "Đao Cứ", prop: "🪚", color: "#8d6e63",
+    n: 17, name: "Đao Cứ", prop: "🪵", color: "#8d6e63",
     sin: "Gian lận, cân điêu, làm ăn bất chính",
     story: "Khúc gỗ cần được cưa cho thẳng thớm, như cách làm ăn tử tế.",
     task: { type: "tap", count: 16, label: "Chạm để cưa gỗ" },
@@ -166,3 +166,11 @@ window.WEIGHTS = [
   { v: 2, label: "Vừa", hint: "hay tái phạm" },
   { v: 3, label: "Nặng", hint: "biết mà vẫn làm" }
 ];
+
+// Hoạt hoạ trả nghiệp: [dụng cụ nhân vật cầm, hiệu ứng bay ra từ đạo cụ]
+window.ACTS = {
+  1: ["🪡", "✨"], 2: ["✂️", "🧵"], 3: ["🚿", "💧"], 4: ["🕯️", "✨"], 5: ["🥢", "💨"],
+  6: ["🧽", "🫧"], 7: ["🥾", "⭐"], 8: ["🫶", "💗"], 9: ["🥄", "💨"], 10: ["🪮", "💕"],
+  11: ["🤲", "💪"], 12: ["🔨", "🍚"], 13: ["🙏", "🪷"], 14: ["🕯️", "✨"], 15: ["🧘", "❄️"],
+  16: ["🤲", "🌾"], 17: ["🪚", "🌟"], 18: ["🔧", "🔗"], 19: ["🛡️", "✨"]
+};
