@@ -1,0 +1,15 @@
+{
+  "name": "Helling · Trả Nghiệp",
+  "short_name": "Helling",
+  "description": "Trả nghiệp online qua 18 tầng địa ngục và tầng 19 mới — dễ thương, nhẹ nhàng.",
+  "lang": "vi",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#2a1b3d",
+  "theme_color": "#2a1b3d",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
