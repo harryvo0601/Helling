@@ -156,7 +156,13 @@
         <div class="gate"><span>${f.prop}</span></div>
         <div class="ground" id="ground"></div>
       </div>
-      <div class="lobby-meta"><span id="who"></span><span class="demo">Bản demo · linh hồn mô phỏng</span></div>
+      <div class="lobby-meta"><span id="who"></span><span class="demo" id="mode">${Presence.isReal() ? "🟢 Người thật + 👻 mô phỏng" : "👻 Linh hồn mô phỏng"}</span></div>
+      <div class="chat card">
+        <ul class="feed" id="feed"><li class="sys">Lời nói ở sảnh cũng là nghiệp — nói lời tử tế nhé 🌸</li></ul>
+        <div class="quick" id="quick"></div>
+        <form class="say" id="sayf"><input id="sayi" maxlength="80" placeholder="Nhắn cho cả sảnh…" autocomplete="off" enterkeyhint="send"><button class="btn" type="submit">Gửi</button></form>
+      </div>
+      <div style="height:14px"></div>
       <div class="card">
         <h3>${esc(f.sin)}</h3>
         <p class="sub">${esc(f.story)}</p>
@@ -164,7 +170,8 @@
       </div>
       <div style="height:14px"></div>
       <button class="btn" id="enter">🚪 Vào phòng trả nghiệp</button>
-      <p class="note">Chạm vào sàn để di chuyển · chạm vào linh hồn khác để gửi lời động viên 💛</p>`;
+      <p class="note">Chạm vào sàn để di chuyển · chạm vào linh hồn khác để gửi lời động viên 💛<br>
+        Tin nhắn được lọc từ ngữ thô tục, chặn link và số điện thoại. Bấm 🔇 để ẩn một người.</p>`;
     $("#back").onclick = () => go("map");
     $("#enter").onclick = () => go("floor", f.n);
 
@@ -200,9 +207,42 @@
       meEl.classList.toggle("flip", x < parseFloat(meEl.style.left));
       meEl.classList.add("walk"); clearTimeout(meEl._w); meEl._w = setTimeout(() => meEl.classList.remove("walk"), 1500);
       place(meEl, x, y);
+      room.move(Math.round(x), Math.round(y));
     };
 
-    const room = Presence.join(f.n, (list, ev) => {
+    // --- trò chuyện ---
+    const muted = new Set(JSON.parse(localStorage.getItem("helling.muted") || "[]"));
+    const feed = $("#feed");
+    const addLine = (name, text, opts = {}) => {
+      const li = document.createElement("li");
+      if (opts.me) li.className = "me";
+      if (opts.toMe) li.className = "tome";
+      li.innerHTML = `<b>${esc(name)}${opts.real ? " 🟢" : ""}</b> ${esc(text)}${opts.id ? `<button class="mute" title="Ẩn người này">🔇</button>` : ""}`;
+      if (opts.id) li.querySelector(".mute").onclick = () => {
+        muted.add(opts.id);
+        try { localStorage.setItem("helling.muted", JSON.stringify([...muted])); } catch {}
+        [...feed.children].forEach((x) => { if (x.dataset.id === opts.id) x.remove(); });
+        if (els[opts.id]) els[opts.id].classList.add("muted");
+        toast(`Đã ẩn ${name}`);
+      };
+      if (opts.id) li.dataset.id = opts.id;
+      feed.appendChild(li);
+      while (feed.children.length > 6) feed.firstChild.remove();
+    };
+    const sendText = (text) => {
+      const r = room.say(text);
+      if (!r.ok) { toast(r.why); return false; }
+      say(meEl, r.text); addLine(S.name, r.text, { me: true });
+      if (r.softened) toast("Bé Đậu đã làm mềm vài từ cho bạn 🌸");
+      return true;
+    };
+    $("#sayf").onsubmit = (e) => {
+      e.preventDefault();
+      const i = $("#sayi");
+      if (sendText(i.value)) { i.value = ""; i.blur(); }
+    };
+
+    const room = Presence.join(f.n, { name: S.name, x: 50, y: 80, halo: !owe }, (list, ev) => {
       const ids = new Set(list.map((p) => p.id));
       Object.keys(els).forEach((id) => { if (!ids.has(id)) { els[id].classList.add("gone"); const el = els[id]; setTimeout(() => el.remove(), 600); delete els[id]; } });
       list.forEach((p) => {
@@ -210,7 +250,12 @@
         if (!el) {
           el = els[p.id] = makeAv(p, false);
           place(el, p.x, p.y);
-          el.onpointerdown = (e) => { e.stopPropagation(); say(meEl, `Cố lên ${p.name}!`); room.cheer(p.id); vibrate(10); };
+          if (p.real) el.classList.add("real");
+          if (muted.has(p.id)) el.classList.add("muted");
+          el.onpointerdown = (e) => {
+            e.stopPropagation(); vibrate(10);
+            const t = room.cheer(p); say(meEl, t); addLine(S.name, t, { me: true });
+          };
         } else if (parseFloat(el.style.left) !== p.x) {
           el.classList.toggle("flip", p.x < parseFloat(el.style.left));
           el.classList.add("walk"); setTimeout(() => el.classList.remove("walk"), 1500);
@@ -219,9 +264,16 @@
         el.classList.toggle("working", p.working);
         if (p.halo && !el._halo) { el._halo = true; el.querySelector(".body").innerHTML = soulSVG("happy", "", p.tint); }
       });
-      if (ev && els[ev.id]) say(els[ev.id], ev.text);
-      $("#who").textContent = `👻 ${list.length + 1} linh hồn đang ở sảnh (có bạn)`;
+      if (ev && !muted.has(ev.id)) {
+        const p = list.find((x) => x.id === ev.id);
+        if (els[ev.id]) say(els[ev.id], ev.text);
+        addLine(ev.name || (p && p.name) || "Linh hồn", ev.text, { id: ev.id, real: p && p.real, toMe: ev.toMe });
+      }
+      const nReal = list.filter((p) => p.real).length;
+      $("#who").textContent = `👻 ${list.length + 1} linh hồn ở sảnh${nReal ? ` · ${nReal} người thật` : ""}`;
     });
+    $("#quick").innerHTML = room.cheers.map((c) => `<button type="button">${esc(c)}</button>`).join("");
+    $("#quick").querySelectorAll("button").forEach((b) => b.onclick = () => sendText(b.textContent));
     cleanup = () => room.leave();
   }
 

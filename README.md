@@ -11,6 +11,23 @@ Mỗi tầng có sảnh riêng: thấy linh hồn của mình (viền sáng, tê
 
 ![Sảnh](docs/preview-lobby.png)
 
+## Trò chuyện trong sảnh
+- Nút **câu động viên soạn sẵn** + ô **gõ chữ tự do** (tối đa 80 ký tự).
+- Bộ lọc (`presence.js`): từ thô tục → 🌸, **chặn link và số điện thoại** (chống lừa đảo), giới hạn 3 giây/tin và 6 tin/phút. Tin nhận về cũng được lọc lại.
+- Bấm 🔇 để ẩn một người (nhớ trên máy).
+- Lưu ý: lọc phía máy người dùng chỉ là lớp đầu. Khi đông người thật nên thêm kiểm duyệt phía máy chủ (Cloud Functions) và nút báo cáo.
+
+## Bật người thật (Firebase) — làm được trên iPhone
+Không bật thì sảnh chỉ có linh hồn mô phỏng. Bật rồi thì có **cả mô phỏng và người thật** (tên có chấm xanh ●).
+1. Safari → `console.firebase.google.com` → đăng nhập Google → **Add project** (tên `helling`, tắt Google Analytics cho gọn).
+2. Menu **Build → Realtime Database → Create database** → chọn vị trí **Singapore (asia-southeast1)** → **Start in locked mode**.
+3. Tab **Rules** → xoá hết, dán nội dung file `database.rules.json` → **Publish**.
+4. ⚙️ **Project settings → General → Your apps → biểu tượng `</>` (Web)** → đặt tên → **Register app**. Copy đoạn `firebaseConfig` (có `apiKey`, `databaseURL`…).
+5. Trên GitHub mở file `config.js` → bút chì ✏️ → thay `null` bằng đoạn config → **Commit changes**.
+6. Đợi GitHub Pages cập nhật 1–2 phút, mở app trên 2 điện thoại cùng vào một tầng là thấy nhau.
+
+> `apiKey` của Firebase web là thông tin công khai theo thiết kế; an toàn dựa vào **Rules**. Rules hiện tại kiểm tra định dạng/độ dài nhưng chưa có đăng nhập, phù hợp bản thử nghiệm.
+
 ## Cách chơi
 1. **Tự soi** – chọn điều mình thấy chưa ổn (nói xấu, nóng giận, thất hứa…), chọn mức độ Nhẹ/Vừa/Nặng, ghi chú riêng (chỉ lưu trên máy).
 2. Điều đó được ghi vào **sổ nghiệp** của tầng tương ứng (🔥).

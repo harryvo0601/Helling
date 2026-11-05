@@ -1,0 +1,23 @@
+{
+  "rules": {
+    "rooms": {
+      "$room": {
+        "souls": {
+          ".read": true,
+          "$uid": {
+            ".write": true,
+            ".validate": "newData.hasChildren(['name','x','y','t']) && newData.child('name').isString() && newData.child('name').val().length <= 24 && newData.child('x').isNumber() && newData.child('y').isNumber()"
+          }
+        },
+        "msgs": {
+          ".read": true,
+          ".indexOn": ["t"],
+          "$id": {
+            ".write": "!data.exists()",
+            ".validate": "newData.hasChildren(['from','name','text','t']) && newData.child('text').isString() && newData.child('text').val().length <= 80 && newData.child('name').val().length <= 24 && newData.child('t').val() <= now"
+          }
+        }
+      }
+    }
+  }
+}

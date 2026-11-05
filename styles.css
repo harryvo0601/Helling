@@ -271,3 +271,23 @@ input.name:focus { outline: none; border-color: var(--accent); }
 @keyframes jump { 40% { transform: translateY(-24px) scale(1.05); } }
 @keyframes hop { from { transform: translateY(0); } to { transform: translateY(-6px); } }
 @keyframes burst { from { opacity: 1; transform: translate(0,0) scale(.6); } to { opacity: 0; transform: translate(var(--dx, 0), -70px) scale(1.2); } }
+
+/* ---------- Trò chuyện trong sảnh ---------- */
+.av.real .nm::before { content: "● "; color: #6fe39a; }
+.av.muted { opacity: .35; }
+.av.muted .bb { display: none; }
+.chat { padding: 12px; }
+.feed { list-style: none; margin: 0 0 10px; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; min-height: 40px; }
+.feed li { background: var(--bg2); padding: 7px 10px; border-radius: 12px; line-height: 1.4; display: flex; gap: 6px; align-items: baseline; animation: fadeUp .3s ease both; }
+.feed li b { white-space: nowrap; color: var(--lotus); }
+.feed li.me { background: #5a3a5f; }
+.feed li.me b { color: var(--accent); }
+.feed li.tome { box-shadow: inset 0 0 0 2px var(--accent); }
+.feed li.sys { color: var(--muted); font-size: 12.5px; justify-content: center; background: none; }
+.feed .mute { margin-left: auto; font-size: 13px; opacity: .5; padding: 0 2px; }
+.quick { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; }
+.quick button { flex: none; background: var(--card2); border-radius: 999px; padding: 7px 12px; font-size: 13px; font-weight: 700; }
+.say { display: flex; gap: 8px; }
+.say input { flex: 1; min-width: 0; padding: 12px 14px; border-radius: 14px; border: 2px solid var(--card2); background: var(--bg2); color: var(--ink); font-size: 16px; }
+.say input:focus { outline: none; border-color: var(--accent); }
+.say .btn { width: auto; padding: 0 18px; }
