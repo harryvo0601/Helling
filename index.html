@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cut, user-scalable=no">
+  <meta name="theme-color" content="#2a1b3d">
+  <meta name="description" content="Trả nghiệp online qua 18 tầng địa ngục và tầng 19 mới — hoạt hoạ dễ thương, để giải trí và tự soi lại mình.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Helling · Trả Nghiệp</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon.svg">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <div class="brand"><span class="brand-dot"></span>Helling</div>
+      <div class="pills">
+        <span class="pill" title="Nghiệp còn nợ">🔥 <b id="stat-debt">0</b></span>
+        <span class="pill" title="Công đức">🪷 <b id="stat-merit">0</b></span>
+      </div>
+    </header>
+
+    <main id="view" aria-live="polite"></main>
+
+    <nav class="tabbar" role="tablist">
+      <button data-tab="map" class="active"><span>🗺️</span>Các tầng</button>
+      <button data-tab="reflect"><span>🪞</span>Tự soi</button>
+      <button data-tab="book"><span>📜</span>Sổ nghiệp</button>
+    </nav>
+  </div>
+
+  <div id="toast" role="status"></div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
